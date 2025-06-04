@@ -6,6 +6,18 @@ function TaskList({ tasks, fetchTasks }) {
   const [editTaskId, setEditTaskId] = useState(null); // id da tarefa que está sendo editada
   const [editTitle, setEditTitle] = useState(''); // título temporário da edição
 
+  // Função auxiliar para formatar a data em formato legível (pt-BR)
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
   // Alterna o status concluído da tarefa
   const toggleCompleted = async (task) => {
     try {
@@ -28,19 +40,19 @@ function TaskList({ tasks, fetchTasks }) {
     }
   };
 
-  // Começa a editar tarefa, define id e título atual
+  // Começa a editar tarefa
   const startEditing = (task) => {
     setEditTaskId(task.id);
     setEditTitle(task.title);
   };
 
-  // Cancela edição
+  // Cancela a edição
   const cancelEditing = () => {
     setEditTaskId(null);
     setEditTitle('');
   };
 
-  // Salva edição da tarefa no backend
+  // Salva a edição
   const saveEditing = async () => {
     try {
       await axios.patch(`http://localhost:3001/tasks/${editTaskId}`, {
@@ -58,12 +70,12 @@ function TaskList({ tasks, fetchTasks }) {
   const filteredTasks = tasks.filter((task) => {
     if (filter === 'completed') return task.completed;
     if (filter === 'pending') return !task.completed;
-    return true; // all
+    return true; // todas
   });
 
   return (
     <div>
-      {/* Botões de filtro */}
+      {/* Botões para filtro de tarefas */}
       <div style={{ marginBottom: '10px' }}>
         <button onClick={() => setFilter('all')}>Todas</button>
         <button onClick={() => setFilter('completed')}>Concluídas</button>
@@ -72,14 +84,14 @@ function TaskList({ tasks, fetchTasks }) {
 
       <ul>
         {filteredTasks.map((task) => (
-          <li key={task.id} style={{ marginBottom: '8px' }}>
+          <li key={task.id} style={{ marginBottom: '12px' }}>
             <input
               type="checkbox"
               checked={task.completed}
               onChange={() => toggleCompleted(task)}
             />
 
-            {/* Se estiver editando esta tarefa, mostra input */}
+            {/* Se estiver editando, mostra input e botões de ação */}
             {editTaskId === task.id ? (
               <>
                 <input
@@ -96,15 +108,25 @@ function TaskList({ tasks, fetchTasks }) {
                 </button>
               </>
             ) : (
-              <>
-                <span
+              // Caso contrário, exibe título e data formatada
+              <div style={{ display: 'inline-block', marginLeft: '8px' }}>
+                <div
                   style={{
                     textDecoration: task.completed ? 'line-through' : 'none',
-                    marginLeft: '8px',
+                    fontWeight: 'bold',
                   }}
                 >
                   {task.title}
-                </span>
+                </div>
+                <div style={{ fontSize: '12px', color: '#666' }}>
+                  Criada em: {formatDate(task.createdAt)}
+                </div>
+              </div>
+            )}
+
+            {/* Botões editar e excluir */}
+            {editTaskId !== task.id && (
+              <>
                 <button
                   onClick={() => startEditing(task)}
                   style={{ marginLeft: '10px' }}
