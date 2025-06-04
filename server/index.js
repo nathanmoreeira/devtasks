@@ -36,31 +36,41 @@ app.post('/tasks', async (req, res) => {
   res.json(newTask);
 });
 
-// Rota para atualizar o status de conclusão da tarefa (PUT /tasks/:id)
-app.put('/tasks/:id', async (req, res) => {
-  // Pega o id da tarefa da URL (ex: /tasks/3)
-  const { id } = req.params;
-  // Pega o novo valor de "completed" do corpo da requisição
-  const { completed } = req.body;
-  // Atualiza o campo "completed" da tarefa no banco
-  const updatedTask = await prisma.task.update({
-    where: { id: Number(id) },
-    data: { completed },
-  });
-  // Retorna a tarefa atualizada
-  res.json(updatedTask);
+// Rota para atualizar uma tarefa pelo id
+app.patch('/tasks/:id', async (req, res) => {
+  const taskId = parseInt(req.params.id);
+  const { title, completed } = req.body;
+
+  try {
+    // Atualiza a tarefa no banco (title e completed são opcionais)
+    const updatedTask = await prisma.task.update({
+      where: { id: taskId },
+      data: {
+        title,
+        completed,
+      },
+    });
+    res.json(updatedTask);
+  } catch (error) {
+    console.error('Erro ao atualizar tarefa:', error);
+    res.status(500).json({ error: 'Erro ao atualizar tarefa' });
+  }
 });
 
-// Rota para deletar uma tarefa (DELETE /tasks/:id)
+
+// Rota para deletar uma tarefa pelo id
 app.delete('/tasks/:id', async (req, res) => {
-  // Pega o id da tarefa da URL
-  const { id } = req.params;
-  // Deleta a tarefa no banco
-  await prisma.task.delete({
-    where: { id: Number(id) },
-  });
-  // Retorna uma mensagem simples confirmando a deleção
-  res.json({ message: 'Tarefa deletada' });
+  const taskId = parseInt(req.params.id);
+
+  try {
+    await prisma.task.delete({
+      where: { id: taskId },
+    });
+    res.json({ message: 'Tarefa deletada com sucesso' });
+  } catch (error) {
+    console.error('Erro ao deletar tarefa:', error);
+    res.status(500).json({ error: 'Erro ao deletar tarefa' });
+  }
 });
 
 // Define a porta que o servidor vai escutar
