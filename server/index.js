@@ -36,26 +36,29 @@ app.post('/tasks', async (req, res) => {
   res.json(newTask);
 });
 
-// Rota para atualizar uma tarefa pelo id
+// Rota PATCH para atualizar título e status da tarefa pelo ID
 app.patch('/tasks/:id', async (req, res) => {
-  const taskId = parseInt(req.params.id);
-  const { title, completed } = req.body;
+  const taskId = Number(req.params.id); // pega o id da URL
+  const { title, completed } = req.body; // pega dados para atualizar
 
   try {
-    // Atualiza a tarefa no banco (title e completed são opcionais)
+    // Atualiza a tarefa no banco de dados
     const updatedTask = await prisma.task.update({
       where: { id: taskId },
       data: {
-        title,
-        completed,
+        // Só atualiza os campos que vieram
+        ...(title !== undefined && { title }),
+        ...(completed !== undefined && { completed }),
       },
     });
-    res.json(updatedTask);
+    res.json(updatedTask); // envia a tarefa atualizada
   } catch (error) {
-    console.error('Erro ao atualizar tarefa:', error);
-    res.status(500).json({ error: 'Erro ao atualizar tarefa' });
+    // Se não encontrou a tarefa ou outro erro
+    res.status(404).json({ error: 'Tarefa não encontrada ou erro ao atualizar' });
   }
 });
+
+
 
 
 // Rota para deletar uma tarefa pelo id
