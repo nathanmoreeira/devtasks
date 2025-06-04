@@ -58,23 +58,23 @@ app.patch('/tasks/:id', async (req, res) => {
   }
 });
 
-
-
-
-// Rota para deletar uma tarefa pelo id
+// Rota DELETE para remover uma tarefa pelo ID
 app.delete('/tasks/:id', async (req, res) => {
-  const taskId = parseInt(req.params.id);
+  const taskId = Number(req.params.id); // Pega o ID da URL
 
   try {
+    // Tenta deletar a tarefa no banco
     await prisma.task.delete({
       where: { id: taskId },
     });
+    // Se deu certo, retorna mensagem de sucesso
     res.json({ message: 'Tarefa deletada com sucesso' });
   } catch (error) {
-    console.error('Erro ao deletar tarefa:', error);
-    res.status(500).json({ error: 'Erro ao deletar tarefa' });
+    // Se não achou a tarefa ou deu erro, responde erro 404
+    res.status(404).json({ error: 'Tarefa não encontrada' });
   }
 });
+
 
 // Define a porta que o servidor vai escutar
 const PORT = 3001;
